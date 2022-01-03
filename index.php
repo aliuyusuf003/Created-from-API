@@ -1,4 +1,4 @@
 <?php
 
 
-echo 'testing';
+echo 'Silence is golden';
