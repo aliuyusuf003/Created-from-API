@@ -1,3 +1,5 @@
 vendor/
 readme.php 
-
+composer.json
+composer.lock
+.env
