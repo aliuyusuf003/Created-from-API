@@ -63,7 +63,7 @@ class TaskController{
                 
                 */
                 case "PATCH":              
-                    $data = (array)json_decode(file_get_contents("php://input"));// php://input allow us to get content from the request body
+                    $data = (array)json_decode(file_get_contents("php://input"),true);// php://input allow us to get content from the request body
                     $errors = $this->getValidationErrors($data,false);
                          
                     if ( ! empty($errors)) {
@@ -73,10 +73,12 @@ class TaskController{
                         
                     }
                     
-                    //   echo "update $id";
+                    $rows_updated = $this->gateway->update($id, $data);
+                    echo json_encode(["message" => "Task updated", "rows_updated" => $rows_updated]);
                     break;
                 case "DELETE":
-                    echo "delete $id";
+                    $rows_deleted = $this->gateway->delete($id);
+                    echo json_encode(["message" => "Task deleted", "rows_deleted" => $rows_deleted]);
                     break;
                 default:
                     $this->respondMethodNotAllowed("GET,PATCH,DELETE");
