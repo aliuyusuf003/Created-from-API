@@ -15,16 +15,26 @@ class TaskController{
             echo json_encode($this->gateway->getAll());
             }elseif($method == "POST"){
                 // echo "created";
+               
 
             //   echo file_get_contents("php://input");// php://input allow us to get content from the request body
            $data = (array)json_decode(file_get_contents("php://input"));// php://input allow us to get content from the request body
+           $errors = $this->getValidationErrors($data);
+                
+           if ( ! empty($errors)) {
+               
+               $this->respondUnprocessableEntity($errors);
+               return;
+               
+           }
+           
            $id = $this->gateway->create($data);
            $this->respondCreated($id);
 
 
 
             }else{
-                
+
                 // http_response_code(405);
                 // header("Allow: GET, POST");
                 $this->respondMethodNotAllowed("GET","POST");
@@ -42,9 +52,28 @@ class TaskController{
                     // echo "show $id";
                     echo json_encode($task);
                     break;
+                
+                //   "PUT" is idempotent while "PATCH" is not. You have to use "PATCH"
+                // PUT will expect all attributes be filled before updating resource
+
+                    /*
+                Idempotence is the property of certain operations in mathematics and computer science whereby they can 
+                be applied multiple times without changing the result beyond the initial application. 
+                The concept of idempotence arises in a number of places in abstract algebra and functional programming.
+                
+                */
+                case "PATCH":              
+                    $data = (array)json_decode(file_get_contents("php://input"));// php://input allow us to get content from the request body
+                    $errors = $this->getValidationErrors($data,false);
+                         
+                    if ( ! empty($errors)) {
+                        
+                        $this->respondUnprocessableEntity($errors);
+                        return;
+                        
+                    }
                     
-                case "PATCH":
-                    echo "update $id";
+                    //   echo "update $id";
                     break;
                 case "DELETE":
                     echo "delete $id";
@@ -56,6 +85,12 @@ class TaskController{
         }
 
 
+    }
+
+    private function respondUnprocessableEntity(array $errors): void
+    {
+        http_response_code(422);
+        echo json_encode(["errors" => $errors]);
     }
 
     private function respondMethodNotAllowed(string $allowedMethods):void
@@ -77,5 +112,26 @@ class TaskController{
             "id"=> $id,
             "message" => "Task Created"
         ]);
+    }
+    private function getValidationErrors(array $data, bool $is_new = true): array
+    {
+        $errors = [];
+        
+        if ($is_new && empty($data["name"])) {
+            
+            $errors[] = "name is required";
+            
+        }
+        
+        if ( ! empty($data["priority"])) {
+            
+            if (filter_var($data["priority"], FILTER_VALIDATE_INT) === false) {
+                
+                $errors[] = "priority must be an integer";
+                
+            }
+        }
+        
+        return $errors;
     }
 }

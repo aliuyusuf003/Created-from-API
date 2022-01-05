@@ -4,6 +4,7 @@ declare(strict_types=1); // global
 require dirname(__DIR__). '/vendor/autoload.php';// calling a parent folder
 
 set_exception_handler("ErrorHandler::handleException");// calling ErrorHandler class
+set_error_handler("ErrorHandler::handleError");// generic ErrorHandler class
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
