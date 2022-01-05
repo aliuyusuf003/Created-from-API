@@ -1,12 +1,7 @@
 <?php
 declare(strict_types=1); // global
-// ini_set('display_errors','ON');
-require dirname(__DIR__). '/vendor/autoload.php';// calling a parent folder
 
-set_exception_handler("ErrorHandler::handleException");// calling ErrorHandler class
-set_error_handler("ErrorHandler::handleError");// generic ErrorHandler class
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+require __DIR__."/bootstrap.php";
 
 
 $path = parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH) ; // this removes the query string
@@ -26,6 +21,7 @@ $id = $parts[4] ?? null; // get optional id
 
 // echo $_SERVER['REQUEST_METHOD']; // get method
 
+
 // validate request uri
 if($resource != "tasks"){
 
@@ -39,13 +35,25 @@ if($resource != "tasks"){
 // require dirname(__DIR__). '/src/TaskController.php';// calling a parent folder
 // require __DIR__.'/src/TaskController.php';
 
-header("Content-type: application/json; charset=UTF-8");
+// print_r($_SERVER);
+
+
 
 
 
 $database = new Database($_ENV['DB_HOST'],$_ENV['DB_NAME'],$_ENV['DB_USER'],$_ENV['DB_PASS']);
-
 // $database->getConnection();// this is removed so database connection should not be global
+$user_gateway = new UserGateway($database);
+
+$auth = new Auth($user_gateway);
+
+if ( ! $auth->authenticateAPIKey()) {
+    exit;
+}
+
+
+
+
 
 $task_gateway = new TaskGateway($database);
 $controller = new TaskController($task_gateway);
