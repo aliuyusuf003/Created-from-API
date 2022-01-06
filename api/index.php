@@ -11,9 +11,8 @@ $parts = explode('/',$path);
 
 // print_r($parts);
 
-// exit;
-$resource  = $parts[3];  // get resource
 
+$resource  = $parts[3];  // get resource
 $id = $parts[4] ?? null; // get optional id
 
 
@@ -23,7 +22,7 @@ $id = $parts[4] ?? null; // get optional id
 
 
 // validate request uri
-if($resource != "tasks"){
+if($resource != "tasks" ||$resource == "src" ){
 
     // header("{$_SERVER['SERVER_PROTOCOL']} 404 Not Found");// or use http_response_code(3digits code here)
     // header("HTTP/1.0 418 I'm A Teapot");// free style
@@ -51,12 +50,10 @@ if ( ! $auth->authenticateAPIKey()) {
     exit;
 }
 
-
-
-
+$user_id = $auth->getUserId();
 
 $task_gateway = new TaskGateway($database);
-$controller = new TaskController($task_gateway);
+$controller = new TaskController($task_gateway, $user_id);
 
 $controller->processRequest($_SERVER['REQUEST_METHOD'],$id);
 

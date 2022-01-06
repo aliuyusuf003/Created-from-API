@@ -5,12 +5,16 @@ class TaskGateway{
     public function __construct(Database $database){
         $this->conn = $database->getConnection();
     }
-    public function getAll():array
+    public function getAllUserTask(int $user_id):array
     {
         $sql = "SELECT *
                  FROM task
+                 WHERE user_id = :user_id
                  ORDER BY name";
-        $stmt = $this->conn->query($sql);
+        // $stmt = $this->conn->query($sql);// when there is no where clause
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->execute();
 
         // return $stmt->fetchAll(PDO::FETCH_ASSOC);
         // converting integer to booleans
@@ -24,7 +28,7 @@ class TaskGateway{
         return $data;
     }
 
-    public function get(string $id)
+    public function getForUser(string $id)
     {
         $sql = "SELECT *
         FROM task where id = :id";

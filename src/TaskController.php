@@ -3,16 +3,20 @@
 class TaskController{
 
     private $gateway;
-    public function __construct(TaskGateway $gateway){
+    private $user_id;
+
+    public function __construct(TaskGateway $gateway, int $user_id){
         $this->gateway = $gateway;
+        $this->user_id = $user_id;
     }
+
     public function processRequest(string $method, ?string $id):void 
     {
         if($id == null){
             if($method == 'GET'){
                 // echo "index";
 
-            echo json_encode($this->gateway->getAll());
+            echo json_encode($this->gateway->getAllUserTask($this->user_id));
             }elseif($method == "POST"){
                 // echo "created";
                
