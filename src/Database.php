@@ -2,7 +2,7 @@
 
 class Database
 {
-
+    private ?PDO $conn = null;// ? making it optionally nullable
     public function __construct(
          string $host,
          string $name,
@@ -16,14 +16,18 @@ class Database
 
     }
     public function getConnection(): PDO
-    {
-        $dsn = "mysql:host={$this->host};dbname={$this->name};charset=utf8";
-        
-        return new PDO($dsn, $this->user, $this->password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::ATTR_STRINGIFY_FETCHES => false// this converts string to numbers
+    {     
 
-        ]);
+        if ($this->conn === null) {
+            $dsn = "mysql:host={$this->host};dbname={$this->name};charset=utf8";
+            
+            $this->conn = new PDO($dsn, $this->user, $this->password, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_STRINGIFY_FETCHES => false// this converts string to numbers
+            ]);
+        }
+        
+        return $this->conn;
     }
 }

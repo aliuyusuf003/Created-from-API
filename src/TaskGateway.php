@@ -28,13 +28,15 @@ class TaskGateway{
         return $data;
     }
 
-    public function getForUser(string $id)
+    public function getUserTask(int $user_id,string $id)
     {
         $sql = "SELECT *
-        FROM task where id = :id";
+        FROM task where id = :id
+        AND user_id = :user_id";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->execute();
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         if($data !== false){
@@ -45,26 +47,27 @@ class TaskGateway{
 
     }
 
-    public function create(array $data):string
+    public function createTask(array $data,int $user_id):string
     {
-        $sql = "INSERT INTO task(name,priority,is_completed)
-                VALUES(:name, :priority,:is_completed)";
+        $sql = "INSERT INTO task(name,priority,is_completed, user_id)
+                VALUES(:name, :priority,:is_completed, :user_id)";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(":name", $data['name'], PDO::PARAM_STR);
         if(empty($data['priority'])){
-        $stmt->bindValue(":priority", null, PDO::PARAM_NULL);
+            $stmt->bindValue(":priority", null, PDO::PARAM_NULL);
         }else{
             $stmt->bindValue(":priority", $data['priority'], PDO::PARAM_INT);
         }
-
+        
+        $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->bindValue(":is_completed", $data['is_completed'] ?? false, PDO::PARAM_BOOL);
         $stmt->execute();
         return $this->conn->lastInsertId();
 
     }
 
-    public function update(string $id, array $data):int
+    public function updateTask(int $user_id,string $id, array $data):int
     {
         $fields = [];
         
@@ -112,12 +115,13 @@ class TaskGateway{
             
             $sql = "UPDATE task"
                  . " SET " . implode(", ", $sets)
-                 . " WHERE id = :id";// implode will join array by its delimiters
+                 . " WHERE id = :id AND user_id=:user_id";// implode will join array by its delimiters
             
             
             $stmt = $this->conn->prepare($sql);
             
             $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+            $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
             
             // binding collectively
             foreach ($fields as $name => $values) {
@@ -134,14 +138,14 @@ class TaskGateway{
         
         
     }
-    public function delete(string $id):int
+    public function deleteTask(int $user_id, string $id):int
     {
-        $sql = "DELETE FROM task"                
-                 . " WHERE id = :id";            
+        $sql = "DELETE FROM task WHERE id = :id AND user_id=:user_id";     
             
             $stmt = $this->conn->prepare($sql);
             
             $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+            $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
             $stmt->execute();
             
             return $stmt->rowCount();
